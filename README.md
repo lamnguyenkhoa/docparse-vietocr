@@ -119,9 +119,21 @@ After `download_models.py` the service needs no network: VietOCR's configs are v
 versions; `app/cuda_preload.py` loads the right ones first (`docs/clash-fix.md`). It runs at the top of
 `app/main.py` and must stay before any paddle/torch/cv2 import.
 
-**Linux (172.16.20.76)**: clone to `/home/atoma/Atoma/docparse-vietocr`, run the first two commands above as
-`atoma`, then `bash linux-service.sh` (installs and starts the systemd unit
-`docparse-vietocr`, `CUDA_VISIBLE_DEVICES=0`). Logs: `journalctl -u docparse-vietocr -f`.
+**Linux, run once**: `bash run-docparse-server.sh` does the same three steps, starts the server in the background
+and gives the terminal back (log: `server.log`). `bash run-docparse-server.sh stop` / `status`. It does not come
+back after a reboot - use `linux-service.sh` for that.
+
+### Run as a background service
+
+One script per OS does everything (uv, dependencies, models, `.env` from `.env.example` if missing), installs the
+service, starts it at boot and waits for `/health`. Re-run it to update; pass `uninstall` to remove the service.
+
+- **Linux**: `bash linux-service.sh` as a normal user with sudo (not root). Installs the systemd unit
+  `docparse-vietocr` running as that user from the clone's folder. Logs: `journalctl -u docparse-vietocr -f`.
+- **Windows**: double-click `windows-service.bat` (asks for admin). Registers the scheduled task
+  `docparse-vietocr` (at startup, no window, runs whether or not you are logged in). Log: `server.log`.
+
+To pin a GPU (e.g. on 76, where GPU 1 belongs to Ollama), set `CUDA_VISIBLE_DEVICES=0` in `.env`.
 
 ### Linux risk (not tested - no Linux box from here)
 
