@@ -1,0 +1,77 @@
+[project]
+name = "docparse-vietocr"
+version = "0.1.0"
+description = "Scanned Vietnamese page -> layout regions + text lines (PP-DocLayout + PP-OCRv5 det + VietOCR) over HTTP"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # Layout + line detection. cu129 build: Blackwell (sm_120) needs CUDA >= 12.8.
+    "paddlepaddle-gpu==3.2.1",
+    "paddleocr==3.7.0",
+    "paddlex==3.7.2",
+    # Line recognition. cu128 wheels (Blackwell).
+    "torch==2.11.0",
+    "torchvision==0.26.0",
+    "vietocr==0.3.13",
+    # Must match the cuDNN torch bundles (9.19); paddle pins 9.9.0.52 -> overridden below. See docs/clash-fix.md.
+    "nvidia-cudnn-cu12==9.19.0.56",
+    "opencv-contrib-python==4.10.0.84",
+    "numpy==2.3.5",
+    "pillow==12.1.0",
+    "pyyaml>=6",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "python-multipart>=0.0.9",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[tool.uv]
+package = false
+# Only the two platforms this runs on (Windows dev box, Linux 76).
+environments = ["sys_platform == 'win32'", "sys_platform == 'linux'"]
+override-dependencies = [
+    # paddlepaddle-gpu pins cuDNN 9.9.0.52; torch 2.11 cu128 is built against 9.19 and both share one process.
+    "nvidia-cudnn-cu12==9.19.0.56",
+    # paddle cu129 and torch cu128 pin different CUDA 12.x libraries. Windows torch bundles its own DLLs and
+    # does not see these; Linux torch (via cuda-toolkit==12.8.1) does. Take the newer of each (12.x is
+    # forward-compatible for a 12.8-built torch). Untested at runtime on Linux - see README "Linux risk".
+    "nvidia-cuda-runtime-cu12==12.9.37",
+    "nvidia-cublas-cu12==12.9.0.13",
+    "nvidia-cufft-cu12==11.4.0.6",
+    "nvidia-curand-cu12==10.3.10.19",
+    "nvidia-cusolver-cu12==11.7.4.40",
+    "nvidia-cusparse-cu12==12.5.9.5",
+    "nvidia-nvjitlink-cu12==12.9.86",
+    "nvidia-nccl-cu12==2.28.9; sys_platform == 'linux'",
+    "nvidia-cufile-cu12==1.14.0.30; sys_platform == 'linux'",
+    "nvidia-cuda-cupti-cu12==12.9.19; sys_platform == 'linux'",
+    "nvidia-cuda-nvrtc-cu12==12.9.41; sys_platform == 'linux'",
+    "nvidia-nvtx-cu12==12.9.19; sys_platform == 'linux'",
+]
+
+# vietocr 0.3.13 pins old training deps (imgaug, albumentations, pillow 10.2, opencv-python next to paddle's
+# opencv-contrib-python). Declare what the inference path really imports instead.
+[[tool.uv.dependency-metadata]]
+name = "vietocr"
+version = "0.3.13"
+requires-dist = ["torch", "torchvision", "einops", "gdown", "pyyaml", "pillow", "numpy", "requests", "tqdm"]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[[tool.uv.index]]
+name = "paddle-cu129"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cu129/"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+paddlepaddle-gpu = { index = "paddle-cu129" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["gpu: loads the real models (needs MODEL_DIR populated and a free GPU)"]
