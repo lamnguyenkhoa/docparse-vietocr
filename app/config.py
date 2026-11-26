@@ -45,7 +45,7 @@ REC_MODELS = ("vgg_transformer", "vgg_seq2seq")
 
 @dataclass(frozen=True)
 class Settings:
-    host: str = "127.0.0.1"
+    host: str = "0.0.0.0"
     port: int = 8126
     token: str = ""
     device: str = "gpu:0"  # paddle style: gpu:N | cpu. VietOCR follows it (cuda:N | cpu) unless rec_device is set.

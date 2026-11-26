@@ -81,7 +81,7 @@ Environment variables, or `.env` in this folder (copy `.env.example`; real envir
 
 | Key | Default | |
 |-|-|-|
-| `DOCPARSE_HOST` | `127.0.0.1` | `0.0.0.0` to serve the LAN |
+| `DOCPARSE_HOST` | `0.0.0.0` | `127.0.0.1` for this machine only |
 | `DOCPARSE_PORT` | `8126` | |
 | `DOCPARSE_TOKEN` | empty | bearer token for `/parse`; empty = no auth |
 | `DOCPARSE_DEVICE` | `gpu:0` | `gpu:N` or `cpu` for all three models (unless `DOCPARSE_REC_DEVICE` is set) |
@@ -120,7 +120,7 @@ versions; `app/cuda_preload.py` loads the right ones first (`docs/clash-fix.md`)
 `app/main.py` and must stay before any paddle/torch/cv2 import.
 
 **Linux (172.16.20.76)**: clone to `/home/atoma/Atoma/docparse-vietocr`, run the first two commands above as
-`atoma`, put `DOCPARSE_HOST=0.0.0.0` in `.env`, then `bash linux-service.sh` (installs and starts the systemd unit
+`atoma`, then `bash linux-service.sh` (installs and starts the systemd unit
 `docparse-vietocr`, `CUDA_VISIBLE_DEVICES=0`). Logs: `journalctl -u docparse-vietocr -f`.
 
 ### Linux risk (not tested - no Linux box from here)

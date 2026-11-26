@@ -86,7 +86,7 @@ No PDF endpoint, no DOCX, no batch endpoint - keep it small.
 
 ## 5. Config (`app/config.py`, all env, `.env` supported; document every key in `.env.example`)
 
-`DOCPARSE_HOST` (127.0.0.1), `DOCPARSE_PORT` (8126), `DOCPARSE_TOKEN` (empty), `DOCPARSE_DEVICE` (gpu:0),
+`DOCPARSE_HOST` (0.0.0.0), `DOCPARSE_PORT` (8126), `DOCPARSE_TOKEN` (empty), `DOCPARSE_DEVICE` (gpu:0),
 `DOCPARSE_REC_MODEL` (vgg_transformer), `DOCPARSE_MODEL_DIR` (./models), `DOCPARSE_MAX_QUEUE` (8),
 `DOCPARSE_TIMEOUT_S` (60), `DOCPARSE_MAX_UPLOAD_MB` (25), `DOCPARSE_MAX_MPIX` (40), `DOCPARSE_LAYOUT_MIN_SCORE` (0.5),
 `CUDA_VISIBLE_DEVICES` passthrough (on 76 the service must use GPU 0 - see §7).
