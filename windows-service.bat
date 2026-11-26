@@ -58,9 +58,13 @@ if not exist .env (
     echo Created .env from .env.example - edit it to change port, token, device.
 )
 
+rem Runs as docparse-vietocr.exe (not python.exe) so Task Manager / nvidia-smi show what it is.
+call scripts\named-python.bat
+if errorlevel 1 goto :error
+
 echo Registering scheduled task %TASK% (user %USERNAME%)...
 powershell -NoProfile -ExecutionPolicy ByPass -Command ^
-  "$q = [char]34; $a = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument ('/c ' + $q + $q + $env:UV + $q + ' run --frozen --no-dev python -m app.main >> server.log 2>&1' + $q) -WorkingDirectory '%CD%';" ^
+  "$q = [char]34; $a = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument ('/c ' + $q + $q + '%CD%\.venv\Scripts\docparse-vietocr.exe' + $q + ' -m app.main >> server.log 2>&1' + $q) -WorkingDirectory '%CD%';" ^
   "$t = New-ScheduledTaskTrigger -AtStartup;" ^
   "$p = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType S4U -RunLevel Highest;" ^
   "$s = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries;" ^
@@ -85,8 +89,8 @@ pause
 exit /b 0
 
 :killserver
-rem Ends the running server: uv / python processes whose command line is "... -m app.main".
-powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -in 'uv.exe','python.exe' -and $_.CommandLine -like '*-m app.main*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -EA SilentlyContinue }"
+rem Ends the running server: docparse-vietocr.exe, or an older uv / python one whose command line is "... -m app.main".
+powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.Name -in 'docparse-vietocr.exe','uv.exe','python.exe' -and $_.CommandLine -like '*-m app.main*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -EA SilentlyContinue }"
 exit /b 0
 
 :error

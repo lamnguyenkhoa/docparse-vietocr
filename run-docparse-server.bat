@@ -24,8 +24,11 @@ uv run --frozen --no-dev python scripts\download_models.py
 if errorlevel 1 goto :error
 
 rem Settings (DOCPARSE_HOST, DOCPARSE_PORT, DOCPARSE_TOKEN, ...) come from .env if present; see .env.example.
+rem Runs as docparse-vietocr.exe (not python.exe) so Task Manager / nvidia-smi show what it is.
+call scripts\named-python.bat
+if errorlevel 1 goto :error
 echo Starting server...
-uv run --frozen --no-dev python -m app.main
+.venv\Scripts\docparse-vietocr.exe -m app.main
 if errorlevel 1 goto :error
 goto :eof
 

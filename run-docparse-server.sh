@@ -55,9 +55,11 @@ uv sync --frozen --no-dev
 uv run --frozen --no-dev python scripts/download_models.py
 
 # Settings (DOCPARSE_HOST, DOCPARSE_PORT, DOCPARSE_TOKEN, ...) come from .env if present; see .env.example.
-# Run the venv's python directly so the PID is the server itself (stop kills the right process).
+# Run the venv's python directly so the PID is the server itself (stop kills the right process), through a
+# symlink named docparse-vietocr so nvidia-smi / ps / top show that instead of "python".
+ln -sfn python .venv/bin/docparse-vietocr
 echo "Starting server..."
-PYTHONUNBUFFERED=1 nohup .venv/bin/python -m app.main >> "$LOG" 2>&1 < /dev/null &
+PYTHONUNBUFFERED=1 nohup "$DIR/.venv/bin/docparse-vietocr" -m app.main >> "$LOG" 2>&1 < /dev/null &
 echo $! > "$PIDFILE"
 
 PORT="$(grep -E '^DOCPARSE_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '[:space:]"'"'" || true)"

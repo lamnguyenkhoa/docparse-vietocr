@@ -60,7 +60,9 @@ Wants=network-online.target
 Type=simple
 User=$RUN_USER
 WorkingDirectory=$DIR
-ExecStart=$UV run --frozen --no-dev python -m app.main
+# The venv's python through a symlink named docparse-vietocr, so nvidia-smi / ps / top show that name.
+ExecStartPre=/bin/ln -sfn python $DIR/.venv/bin/docparse-vietocr
+ExecStart=$DIR/.venv/bin/docparse-vietocr -m app.main
 Restart=always
 RestartSec=5
 Environment=PYTHONUNBUFFERED=1
